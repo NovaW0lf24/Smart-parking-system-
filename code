@@ -1,0 +1,115 @@
+#include <LiquidCrystal.h>
+
+int triger_out = 12, echo_ou= 13, trigger_in= 8, echo_in=9;
+int d4= 4, d5=5, d6= 6, d7= 7, rs= 2, en= 3;
+LiquidCrystal ldc(rs, en, d4, d5, d6, d7);
+bool out= false, in =false, c_chg= true;
+int count=0, tr= 15, total= 5, wait=0, wait_tr=5;
+
+void setup()
+{
+  lcd.begin(16,2);
+  pinMode(trigger_out, OUTPUT);
+  pinMode(echo_out, INPUT);
+  pinMode(trigger_in, OUTPUT);
+  pinMode(echo_in, INPUT);
+}
+
+void logo()
+{
+  digitalwrite(trigger_out, LOW);
+  delayMicroseconds(2);
+
+  digtalwrite(trigger_out, HIGH);
+  delayMicroseconds(10);
+  digtalwrite(trigger_out, LOW);
+
+  double duration= pulseIn(echo_out, HIGH);
+  double d_out= duration*0.034/2;
+
+  digtalwrite(trigger_in, LOW)
+  delayMicroseconds(2);
+
+  digtalwrite(trigger_in, HIGH);
+  delayMicroseconds(10);
+  digtalwrite(trigger_in, LOW);
+
+  duration = pulse(echo_in, HIGH);
+  double d_in= duration* 0.034/2;
+
+  if(d_out < tr)
+  {
+    if(!out && !in)
+    {
+      out= true;
+      wait = 0;
+    }
+    else if(!out && !in)
+    {
+      count--;
+      in = false;
+      c_chg= true;
+    }
+  }
+  else if(d_in < tr)
+  {
+    if(!out && !in)
+    {
+      in = true;
+      wait= 0;
+    }
+    else if(!out && !in)
+    {
+      count ++;
+      out= false;
+      c_chg= true;
+    }
+  }
+
+  if(count < 0) count= 0;
+  else if( count > total) count= total;
+
+  if(c_chg)
+  {
+    lcd.clear();
+    if(count >= total)
+    {
+      lcd.setCursor(0,0);
+      lcd.print(" The Garage is full");
+      lcd.setCursor(0,1);
+      lcd.print("No new car allowed");
+     }
+     else
+     {
+      lcd.setCursor(0,0);
+      lcd.print("Vacant : ");
+      lcd.print("total-count");
+      lcd.print("/");
+      lcd.print("total");
+     }
+     c_chg = false;
+  }
+
+  if( in || out)
+  {
+    wait++;
+    if( count < total)
+    {
+      lcd.setCursor(0,1);
+      lcd.print("    ");
+    }
+  }
+  if(wait > wait_tr)
+  {
+    in = false;
+    out = false;
+    wait = 0;
+   }
+   if(!in && !out && count<total)
+   {
+    lcd.setCursor(0,1);
+    lcd.print("Ready");
+   }
+
+   delay(100);
+ }
